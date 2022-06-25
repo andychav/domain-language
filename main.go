@@ -1,6 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"log"
+	"os"
+	"strings"
+)
 
 type Pen struct {
 	size int
@@ -8,10 +14,41 @@ type Pen struct {
 }
 
 func main() {
-	p := Pen{}
-	p.selectPen(2)
-	p.putPenDown(true)
-	fmt.Println(p)
+	file := readDLFile("dl.txt")
+
+	// Split string line by line
+	spFile := splitDLFile(file)
+	print(spFile)
+
+	// Check lines for something that is not part of map and throw error if there is
+	// Map each command to function
+}
+
+func readDLFile(filename string) []byte {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return data
+}
+
+//I think I should rename this for clarity
+func splitDLFile(content []byte) []string {
+	var commandLines []string
+	for {
+		advance, token, err := bufio.ScanLines(content, true)
+		if advance == 0 {
+			break
+		}
+		cl := strings.Split(string(token), "#")
+		commandLines = append(commandLines, cl[0])
+		fmt.Println(advance, string(token), err)
+
+		if advance <= len(content) {
+			content = content[advance:]
+		}
+	}
+	return commandLines
 }
 
 func (p *Pen) selectPen(size int) {
@@ -22,6 +59,12 @@ func (p *Pen) putPenDown(down bool) {
 	(*p).down = down
 }
 
-func penMove(dir String, dist int) {
-	//todo: logic for moving pen
+func penMove(dir string, dist int) {
+	fmt.Println("Pen moved", dist, "to the", dir)
+}
+
+func print(slice []string) {
+	for i, s := range slice {
+		fmt.Println(i, s)
+	}
 }
