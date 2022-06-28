@@ -1,3 +1,4 @@
+# This file has a hidden ascii that causes parse to fail
 P 2  # select pen 2
 D    # pen down
 ​W 2  # draw west 2cm

@@ -2,69 +2,88 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 )
 
-type Pen struct {
-	size int
-	down bool
+type Command struct {
+	cmd    string
+	hasArg bool
+	fn     func(string, int)
 }
+
+type CommandList []Command
 
 func main() {
-	file := readDLFile("dl.txt")
+	//set up command table
+	cmds := initCommands()
 
-	// Split string line by line
-	spFile := splitDLFile(file)
-	print(spFile)
-
-	// Check lines for something that is not part of map and throw error if there is
-	// Map each command to function
-}
-
-func readDLFile(filename string) []byte {
-	data, err := os.ReadFile(filename)
+	//Read file line by line
+	f, err := os.Open("dl3.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
-	return data
+	defer f.Close()
+
+	//For each line look up command
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		var cmd string
+		var arg int = -1
+		ln := sc.Text()
+		fmt.Sscanf(ln, "%s %d", &cmd, &arg)
+		foundCmd, err := cmds.findCommand(cmd)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		//Check if command takes an argument
+		if foundCmd.hasArg && arg == -1 {
+			log.Fatal(cmd, "needs an argument")
+		}
+
+		foundCmd.fn(cmd, arg)
+	}
 }
 
-//I think I should rename this for clarity
-func splitDLFile(content []byte) []string {
-	var commandLines []string
-	for {
-		advance, token, err := bufio.ScanLines(content, true)
-		if advance == 0 {
-			break
-		}
-		cl := strings.Split(string(token), "#")
-		commandLines = append(commandLines, cl[0])
-		fmt.Println(advance, string(token), err)
+func initCommands() CommandList {
+	cmds := []Command{
+		{"P", true, doSelectPen},
+		{"U", false, doPenUp},
+		{"D", false, doPenDown},
+		{"N", true, doPenDir},
+		{"S", true, doPenDir},
+		{"E", true, doPenDir},
+		{"W", true, doPenDir},
+	}
 
-		if advance <= len(content) {
-			content = content[advance:]
+	return cmds
+}
+
+func (cl CommandList) findCommand(cmd string) (Command, error) {
+	for _, c := range cl {
+		if c.cmd == cmd {
+			return c, nil
 		}
 	}
-	return commandLines
+	return Command{}, errors.New("Unknown command:" + cmd)
 }
 
-func (p *Pen) selectPen(size int) {
-	(*p).size = size
+func doSelectPen(_ string, size int) {
+	fmt.Println("Pen size set to", size)
 }
 
-func (p *Pen) putPenDown(down bool) {
-	(*p).down = down
+func doPenUp(_ string, _ int) {
+	fmt.Println("Pen is up")
 }
 
-func penMove(dir string, dist int) {
-	fmt.Println("Pen moved", dist, "to the", dir)
+func doPenDown(_ string, _ int) {
+	fmt.Println("Pen is down")
 }
 
-func print(slice []string) {
-	for i, s := range slice {
-		fmt.Println(i, s)
-	}
+func doPenDir(dir string, steps int) {
+	fmt.Println("Pen moved", steps, "to the ", dir)
 }
