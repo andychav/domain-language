@@ -11,5 +11,6 @@
     Ex: (cl []Command) func ...
         (sl []string) func ...
 
+## Could reflection be used to map the functions?
 
-## Could reflection be used to map the functions
+## Is it good practice to use the \_ as a way to match function types?
