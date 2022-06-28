@@ -14,3 +14,5 @@
 ## Could reflection be used to map the functions?
 
 ## Is it good practice to use the \_ as a way to match function types?
+
+## How can I ignore ascii characters on input?
