@@ -1,7 +1,30 @@
 P 2
-D # pen down
-W 2
-N 1
+D
+N 20
+E 20
+S 20
+W 20
+U
+N 18
+D
+W 5
+N 10
+E 30
+S 10
+W 5
+U
+W 18
+S 5
+D
+E 3
 S 3
+W 3
+N 3
+U
+S 13
+E 10
+D
+N 10
 E 5
+S 10
 U

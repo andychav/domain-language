@@ -15,3 +15,8 @@ I read online that in a way, everything above binary is like a Domain Language, 
 ## Future Steps
 
 I would like to actually use Go's image package to generate very basic rectangles based of the input from the DL
+
+## Resources
+
+[Interfaces and types](https://go.dev/doc/effective_go#interfaces_and_types)
+[Method Expressions](https://go.dev/ref/spec#Method_expressions)

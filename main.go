@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"log"
 	"os"
 )
@@ -14,9 +17,24 @@ type Command struct {
 	fn     func(string, int)
 }
 
+type Pen struct {
+	size   int
+	x      int
+	y      int
+	doDraw bool
+}
+
 type CommandList []Command
 
+var img = image.NewRGBA(image.Rect(0, 0, 100, 100))
+var col = color.RGBA{255, 0, 0, 255}
+var p = Pen{}
+
 func main() {
+
+	cX, cY := getRectCenter(img.Rect)
+	p = Pen{x: cX, y: cY}
+
 	//set up command table
 	cmds := initCommands()
 
@@ -47,17 +65,24 @@ func main() {
 
 		foundCmd.fn(cmd, arg)
 	}
+
+	pf, err := os.Create("draw.png")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	png.Encode(pf, img)
 }
 
 func initCommands() CommandList {
 	cmds := []Command{
-		{"P", true, doSelectPen},
-		{"U", false, doPenUp},
-		{"D", false, doPenDown},
-		{"N", true, doPenDir},
-		{"S", true, doPenDir},
-		{"E", true, doPenDir},
-		{"W", true, doPenDir},
+		{"P", true, p.doSelectPen},
+		{"U", false, p.doPenUp},
+		{"D", false, p.doPenDown},
+		{"N", true, p.doPenDir},
+		{"S", true, p.doPenDir},
+		{"E", true, p.doPenDir},
+		{"W", true, p.doPenDir},
 	}
 
 	return cmds
@@ -72,18 +97,49 @@ func (cl CommandList) findCommand(cmd string) (Command, error) {
 	return Command{}, errors.New("Unknown command:" + cmd)
 }
 
-func doSelectPen(_ string, size int) {
+func (p *Pen) doSelectPen(_ string, size int) {
 	fmt.Println("Pen size set to", size)
 }
 
-func doPenUp(_ string, _ int) {
+func (p *Pen) doPenUp(_ string, _ int) {
 	fmt.Println("Pen is up")
+	p.doDraw = false
 }
 
-func doPenDown(_ string, _ int) {
+func (p *Pen) doPenDown(_ string, _ int) {
 	fmt.Println("Pen is down")
+	p.doDraw = true
 }
 
-func doPenDir(dir string, steps int) {
+//this needs a pen receiver
+func (p *Pen) doPenDir(dir string, steps int) {
 	fmt.Println("Pen moved", steps, "to the ", dir)
+
+	px := p.x
+	py := p.y
+	fmt.Println("X:", p.x, "Y:", p.y)
+	i := 1
+	for i <= steps {
+		switch dir {
+		case "N":
+			py--
+		case "S":
+			py++
+		case "E":
+			px++
+		case "W":
+			px--
+		}
+		if p.doDraw {
+			img.Set(px, py, col)
+		}
+		i++
+	}
+	(*p).x = px
+	(*p).y = py
+
+}
+
+func getRectCenter(r image.Rectangle) (x, y int) {
+	return r.Dx() / 2, r.Dy() / 2
 }
